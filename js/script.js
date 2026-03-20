@@ -954,3 +954,203 @@ document.getElementById('bfFilters').addEventListener('click', function(e) {
 //  INIT
 // ═══════════════════════════════════════════════════════════
 loadFeed();
+
+// ═══════════════════════════════════════════════════════
+//  ★ VIDEO DATA
+//  Replace each videoId with your actual YouTube video ID
+//  e.g. if URL is youtube.com/watch?v=abc123XYZ  →  videoId: 'abc123XYZ'
+//  Thumbnails are auto-fetched from YouTube using the ID
+// ═══════════════════════════════════════════════════════
+const VIDEOS = [
+  {
+    part:     'Part 1',
+    videoId:  'QN7t9z5d3i0',   // ← Replace with real ID
+    title:    'Microsoft Power Pages Full Course 2026 | Pages, Navigation, Brand Kit & Styling | Part 1 of 6',
+    desc:     'Welcome to the Microsoft Power Pages Full Course 2026 — a free, complete, hands-on tutorial series designed to take you from zero to building a fully functional, professionally designed Power Pages site step by step.',
+    duration: '05:48',               // ← Replace with real duration e.g. '18:42'
+    topics:   ['Design Studio', 'Pages', 'Navigation', 'Brand Kit'],
+  },
+  {
+    part:     'Part 2',
+    videoId:  '1YhKcM8T3SE',
+    title:    'Microsoft Power Pages Full Course 2026 | Tables, Views & Lists in Data Workspace | Part 2 of 6',
+    desc:     '✅ Create a table in the Power Pages Data Workspace, ✅ Create and configure a View for your table, ✅ Add a List component to your page using that data',
+    duration: '02:24',
+    topics:   ['Data Workspace', 'Tables', 'Views', 'Lists'],
+  },
+  {
+    part:     'Part 3',
+    videoId:  'GMjxUtlrhzw',
+    title:    'Microsoft Power Pages Full Course 2026 | Table Permissions, Web Roles & Page Security | Part 3 of 6',
+    desc:     '✅ Create Table Permissions in Power Pages, ✅ Set up Access Types and Privileges correctly, ✅ Add and configure Web Roles, ✅ Configure Page Permissions to control who sees what',
+    duration: '06:10',
+    topics:   ['Security', 'Web Roles', 'Table Permissions', 'Page Security'],
+  },
+  {
+    part:     'Part 4',
+    videoId:  'ME77QGcVh54',
+    title:    'Microsoft Power Pages Full Course 2026 | Forms, Tables, Attachments & Code Components | Part 4 of 6',
+    desc:     '✅ Create a Table directly in Dataverse, ✅ Create a Form and configure it for Power Pages, ✅ Add a Form component to your page, ✅ Enable Attachments on your form, ✅ Add a Code Component to extend form functionality',
+    duration: '04:21',
+    topics:   ['Forms', 'Dataverse', 'Tables', 'Code Components'],
+  },
+  {
+    part:     'Part 5',
+    videoId:  'hbmqjiVFrcY',
+    title:    'Microsoft Power Pages Full Course 2026 | Multi-Step Forms, Configuration & Permissions | Part 5 of 6',
+    desc:     '✅ Create Dataverse forms for each step of a multi-step form component, ✅ Add a Multi-Step Form component to a Power Pages webpage, ✅ Configure and connect each step correctly, ✅ Set up Table Permissions specifically for multi-step form security',
+    duration: '03:52',
+    topics:   ['Multi-Step Form', 'Configuration', 'Permissions'],
+  },
+  {
+    part:     'Part 6',
+    videoId:  'z84s6jBSZhg',
+    title:    'Microsoft Power Pages Full Course 2026 | Authentication & Identity Provider Setup | Part 6 of 6',
+    desc:     '✅ Authentication overview in Power Pages — how the auth model works end to end, ✅ Understand the difference between local authentication and external identity providers, ✅ Configure an Identity Provider for your Power Pages site, ✅ Connect authenticated users to Dataverse contacts and web roles, ✅ Test the full authentication flow on your completed site',
+    duration: '02:26',
+    topics:   ['Authentication', 'Identity Provider', 'Login Setup'],
+  },
+];
+
+const CHANNEL_URL = 'https://www.youtube.com/@learnwith-uzair';
+let activeIdx = -1;
+
+// ── Build progress strip ─────────────────────────────
+function buildProgressStrip() {
+  const strip = document.getElementById('ytProgressStrip');
+  VIDEOS.forEach((v, i) => {
+    const el = document.createElement('div');
+    el.className = 'yt-progress-part';
+    el.dataset.idx = i;
+    el.innerHTML = `<div class="yt-progress-num">${v.part}</div><div class="yt-progress-lbl">${v.topics[0]}</div>`;
+    el.addEventListener('click', () => playVideo(i));
+    strip.appendChild(el);
+  });
+}
+
+// ── Build video grid ─────────────────────────────────
+function buildGrid() {
+  const grid = document.getElementById('ytGrid');
+  VIDEOS.forEach((v, i) => {
+    const thumbUrl = v.videoId.startsWith('REPLACE')
+      ? null
+      : `https://img.youtube.com/vi/${v.videoId}/mqdefault.jpg`;
+
+    const card = document.createElement('div');
+    card.className = 'yt-card';
+    card.id = `ytCard${i}`;
+    card.style.animationDelay = `${i * 0.08}s`;
+    card.style.animationPlayState = 'paused';
+
+    card.innerHTML = `
+      <div class="yt-thumb">
+        ${thumbUrl
+          ? `<img src="${thumbUrl}" alt="${escHtml(v.title)}" loading="lazy">`
+          : buildThumbPlaceholder(v, i)
+        }
+        <div class="yt-thumb-overlay">
+          <div class="yt-thumb-play"><i class="fas fa-play"></i></div>
+        </div>
+        <div class="yt-part-badge">${v.part}</div>
+        <div class="yt-duration">${v.duration}</div>
+      </div>
+      <div class="yt-card-body">
+        <div class="yt-card-title">${escHtml(v.title)}</div>
+        <div class="yt-card-desc">${escHtml(v.desc)}</div>
+        <div class="yt-card-meta">
+          <div class="yt-card-topics">
+            ${v.topics.map(t => `<span class="yt-topic">${escHtml(t)}</span>`).join('')}
+          </div>
+          <div class="yt-card-watch">Watch <i class="fas fa-arrow-right" style="font-size:10px"></i></div>
+        </div>
+      </div>`;
+
+    card.addEventListener('click', () => playVideo(i));
+    grid.appendChild(card);
+  });
+
+  // Scroll reveal
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animationPlayState = 'running';
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.yt-card').forEach(c => io.observe(c));
+}
+
+function buildThumbPlaceholder(v, i) {
+  const colors = ['#ff4444','#7c6af7','#2dd4bf','#f59e0b','#10b981','#38bdf8'];
+  const icons  = ['🌐','🎨','🗄️','🔒','📋','⚙️'];
+  const c = colors[i % colors.length];
+  const ic = icons[i % icons.length];
+  return `<div style="position:absolute;inset:0;background:linear-gradient(135deg,${c}18,${c}08);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+    <div style="font-size:40px">${ic}</div>
+    <div style="font-size:11px;font-weight:700;color:${c};letter-spacing:0.1em;text-transform:uppercase">${v.part}</div>
+  </div>`;
+}
+
+// ── Play video ───────────────────────────────────────
+function playVideo(idx) {
+  const v = VIDEOS[idx];
+  if (!v) return;
+
+  activeIdx = idx;
+
+  // Update active card
+  document.querySelectorAll('.yt-card').forEach((c, i) => {
+    c.classList.toggle('active', i === idx);
+  });
+
+  // Update progress strip
+  document.querySelectorAll('.yt-progress-part').forEach((p, i) => {
+    p.classList.toggle('active', i === idx);
+  });
+
+  // Scroll player into view
+  document.getElementById('ytPlayerRatio').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Remove placeholder
+  const placeholder = document.getElementById('ytPlaceholder');
+  if (placeholder) placeholder.remove();
+
+  const ratio = document.getElementById('ytPlayerRatio');
+
+  // If real video ID — embed
+  if (!v.videoId.startsWith('REPLACE')) {
+    ratio.innerHTML = `<iframe
+      src="https://www.youtube.com/embed/${v.videoId}?autoplay=1&rel=0&modestbranding=1"
+      title="${escHtml(v.title)}"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen>
+    </iframe>`;
+  } else {
+    // Placeholder video IDs — show stylised "coming" screen
+    ratio.innerHTML = `<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:rgba(0,0,0,0.6);">
+      <div style="font-size:48px">🎬</div>
+      <div style="font-size:16px;font-weight:700;color:#fff;">${escHtml(v.part)}</div>
+      <div style="font-size:13px;color:#8b90a8;max-width:300px;text-align:center">${escHtml(v.title)}</div>
+      <a href="${CHANNEL_URL}" target="_blank" style="margin-top:8px;padding:10px 22px;background:#ff4444;color:#fff;border-radius:50px;font-size:13px;font-weight:700;text-decoration:none;">
+        Watch on YouTube →
+      </a>
+    </div>`;
+  }
+
+  // Update now-playing bar
+  const bar = document.getElementById('ytNowPlaying');
+  document.getElementById('ytNowTitle').textContent = v.title;
+  document.getElementById('ytNowPart').textContent  = v.part;
+  bar.classList.add('visible');
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init ─────────────────────────────────────────────
+buildProgressStrip();
+buildGrid();
