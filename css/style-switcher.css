@@ -1,0 +1,114 @@
+/* ══════════════════════════════════════
+   STYLE SWITCHER — Glassmorphism Theme
+══════════════════════════════════════ */
+
+.style-switcher {
+    position: fixed;
+    right: 0;
+    top: 80px;
+    padding: 18px 16px;
+    width: 200px;
+    background: rgba(8,13,26,0.88);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-right: none;
+    border-radius: 16px 0 0 16px;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    z-index: 101;
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+    transform: translateX(100%);
+    box-shadow: -4px 0 32px rgba(0,0,0,0.4);
+}
+.style-switcher.open {
+    transform: translateX(0);
+}
+
+/* Light mode panel */
+body.light .style-switcher {
+    background: rgba(240,244,255,0.92);
+    border-color: rgba(0,0,0,0.1);
+}
+
+/* Toggle gear button */
+.style-switcher .s-icon {
+    position: absolute;
+    height: 44px;
+    width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8,13,26,0.88);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-right: none;
+    backdrop-filter: blur(16px);
+    color: var(--skin-color);
+    right: 100%;
+    cursor: pointer;
+    border-radius: 12px 0 0 12px;
+    transition: all 0.3s ease;
+    box-shadow: -4px 0 16px rgba(0,0,0,0.3);
+}
+.style-switcher .s-icon:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+body.light .style-switcher .s-icon {
+    background: rgba(236,241,255,0.95);
+    border-color: rgba(0,0,0,0.1);
+    color: var(--skin-color);
+}
+.style-switcher .s-icon i { font-size: 18px; }
+
+/* Position the two icons */
+.style-switcher .style-switcher-toggler { top: 6px; }
+.style-switcher .day-night              { top: 58px; }
+
+/* Section label */
+.style-switcher h4 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted, #555b72);
+    margin: 0 0 12px;
+}
+
+/* Color swatches */
+.style-switcher .colors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.style-switcher .colors span {
+    display: inline-block;
+    height: 28px;
+    width: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 2px solid rgba(255,255,255,0.15);
+    position: relative;
+}
+.style-switcher .colors span:hover {
+    transform: scale(1.2);
+    border-color: rgba(255,255,255,0.5);
+}
+.style-switcher .colors span::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+.style-switcher .colors span:hover::after {
+    border-color: rgba(255,255,255,0.4);
+}
+
+/* Swatch colors */
+.style-switcher .color-1 { background: #5b8dee; box-shadow: 0 0 10px rgba(91,141,238,0.5); }
+.style-switcher .color-2 { background: #7c6af7; box-shadow: 0 0 10px rgba(124,106,247,0.5); }
+.style-switcher .color-3 { background: #2dd4bf; box-shadow: 0 0 10px rgba(45,212,191,0.5); }
+.style-switcher .color-4 { background: #f472b6; box-shadow: 0 0 10px rgba(244,114,182,0.5); }
+.style-switcher .color-5 { background: #fb923c; box-shadow: 0 0 10px rgba(251,146,60,0.5); }
