@@ -625,3 +625,332 @@ window.addEventListener('resize', () => {
 
 // Initial edge draw after layout settles
 setTimeout(() => drawEdges(), 80);
+
+// ── Scroll-reveal for cards ─────────────────────
+const cards = document.querySelectorAll('.cw-card');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.animationPlayState = 'running';
+      io.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+cards.forEach(card => {
+  card.style.animationPlayState = 'paused';
+  io.observe(card);
+});
+
+// ── Particle burst on card click ────────────────
+cards.forEach(card => {
+  card.addEventListener('click', function(e) {
+    const color = getComputedStyle(this).getPropertyValue('--card-color').trim() || '#5b8dee';
+    burst(e.clientX, e.clientY, color);
+  });
+});
+
+function burst(x, y, color) {
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement('div');
+    const angle  = (i / 12) * Math.PI * 2;
+    const radius = 40 + Math.random() * 40;
+    const size   = 4 + Math.random() * 4;
+    p.style.cssText = `
+      position:fixed;
+      left:${x}px; top:${y}px;
+      width:${size}px; height:${size}px;
+      border-radius:50%;
+      background:${color};
+      pointer-events:none;
+      z-index:9999;
+      box-shadow:0 0 8px ${color};
+      transition:all 0.6s cubic-bezier(0.4,0,0.2,1);
+      transform:translate(-50%,-50%);
+      opacity:1;
+    `;
+    document.body.appendChild(p);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        p.style.transform = `translate(calc(-50% + ${Math.cos(angle)*radius}px), calc(-50% + ${Math.sin(angle)*radius}px)) scale(0)`;
+        p.style.opacity = '0';
+      });
+    });
+    setTimeout(() => p.remove(), 700);
+  }
+}
+
+// ── Counter animation for stats ─────────────────
+function animateCounter(el, target, suffix='') {
+  let start = 0;
+  const duration = 1200;
+  const step = (timestamp) => {
+    if (!start) start = timestamp;
+    const progress = Math.min((timestamp - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.floor(eased * target) + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+// Trigger counters when stats strip enters view
+const statsObserver = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting) {
+    statsObserver.disconnect();
+    // Nothing numeric to animate here — but keeping hook for future
+  }
+}, { threshold: 0.5 });
+const statsEl = document.querySelector('.cw-stats');
+if (statsEl) statsObserver.observe(statsEl);
+
+// ═══════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════
+const BLOG_URL    = 'https://muzairsuleman.blogspot.com';
+const FEED_URL    = `${BLOG_URL}/feeds/posts/default?alt=json&max-results=12&callback=bfFeedReceived`;
+const MAX_DISPLAY = 6;
+
+// Category → color + icon mapping
+const CATEGORY_MAP = {
+  'Power Automate':   { color: '#2dd4bf', icon: '🔄' },
+  'Power Pages':      { color: '#10b981', icon: '🌐' },
+  'Copilot Studio':   { color: '#a78bfa', icon: '🤖' },
+  'Power Apps':       { color: '#7b61ff', icon: '📱' },
+  'Dynamics 365':     { color: '#f59e0b', icon: '⚙️' },
+  'Power Platform':   { color: '#5b8dee', icon: '⚡' },
+  'Azure':            { color: '#38bdf8', icon: '☁️' },
+  'AI':               { color: '#f472b6', icon: '🧠' },
+  'Dataverse':        { color: '#5b8dee', icon: '🗄️' },
+  'CRM':              { color: '#fb923c', icon: '📋' },
+  'JavaScript':       { color: '#fbbf24', icon: '💻' },
+  'ALM':              { color: '#6ee7b7', icon: '🔧' },
+};
+
+// Tag → label normalisation for filter matching
+const FILTER_MAP = {
+  'Power Platform': ['Power Platform','Power Apps','Dataverse','ALM','PCF'],
+  'Power Automate': ['Power Automate','Automate Flow','Cached Runs','Process Automation'],
+  'Power Pages':    ['Power Pages','Portal','Customer Portal','Liquid','Web API'],
+  'Dynamics 365':   ['Dynamics 365','CRM','CRM Best Practices','dynamic 365','bpf','business process flow'],
+  'AI':             ['AI','Copilot Studio','Azure AI','AI Builder','claude ai','claude code','agent'],
+};
+
+let allPosts    = [];
+let activeFilter = 'all';
+
+// ═══════════════════════════════════════════════════════════
+//  RSS / JSON FEED FETCH via JSONP (no CORS issues)
+// ═══════════════════════════════════════════════════════════
+function loadFeed() {
+  const script  = document.createElement('script');
+  script.src    = FEED_URL;
+  script.onerror = () => showError('Could not load feed. Check connection or CORS policy.');
+  document.head.appendChild(script);
+
+  // Fallback timeout
+  setTimeout(() => {
+    if (allPosts.length === 0) showError('Feed took too long to respond. Please try again.');
+  }, 8000);
+}
+
+// JSONP callback — Blogger calls this automatically
+window.bfFeedReceived = function(data) {
+  try {
+    const entries = data.feed.entry || [];
+    allPosts = entries.map(parseEntry);
+
+    // Update count strip
+    document.getElementById('bfTotalCount').textContent = data.feed.openSearch$totalResults.$t || entries.length;
+    document.getElementById('bfShowCount').textContent  = Math.min(MAX_DISPLAY, allPosts.length);
+    document.getElementById('bfCountStrip').style.display = 'flex';
+    document.getElementById('bfCta').style.display = 'flex';
+
+    renderPosts(allPosts.slice(0, MAX_DISPLAY));
+  } catch(e) {
+    showError('Failed to parse feed data.');
+  }
+};
+
+// ═══════════════════════════════════════════════════════════
+//  PARSE ENTRY
+// ═══════════════════════════════════════════════════════════
+function parseEntry(entry) {
+  // Title
+  const title = entry.title?.$t || 'Untitled';
+
+  // URL
+  const link = (entry.link || []).find(l => l.rel === 'alternate')?.href || BLOG_URL;
+
+  // Date
+  const rawDate = entry.published?.$t || '';
+  const date    = rawDate ? new Date(rawDate) : null;
+  const dateStr = date ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+
+  // Tags/Labels
+  const tags = (entry.category || []).map(c => c.term).filter(Boolean);
+
+  // Excerpt — strip HTML from content
+  const content = entry.content?.$t || entry.summary?.$t || '';
+  const stripped = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const excerpt  = stripped.length > 160 ? stripped.slice(0, 160).trim() + '…' : stripped;
+
+  // Thumbnail — look for media thumbnail or first img src in content
+  let thumb = null;
+  const mediaThumb = entry['media$thumbnail']?.url;
+  if (mediaThumb) {
+    // Upgrade resolution
+    thumb = mediaThumb.replace(/\/s\d+(-c)?\//, '/s600/');
+  } else {
+    const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+    if (imgMatch) thumb = imgMatch[1];
+  }
+
+  // Category detection
+  let detectedCategory = 'Power Platform';
+  let catColor  = '#5b8dee';
+  let catIcon   = '⚡';
+
+  for (const [cat, cfg] of Object.entries(CATEGORY_MAP)) {
+    if (tags.some(t => t.toLowerCase().includes(cat.toLowerCase()))) {
+      detectedCategory = cat;
+      catColor  = cfg.color;
+      catIcon   = cfg.icon;
+      break;
+    }
+  }
+
+  // Reading time estimate
+  const wordCount = stripped.split(/\s+/).length;
+  const readTime  = Math.max(1, Math.ceil(wordCount / 200));
+
+  return { title, link, dateStr, date, tags, excerpt, thumb, detectedCategory, catColor, catIcon, readTime };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════
+function renderPosts(posts) {
+  const grid = document.getElementById('bfGrid');
+  grid.innerHTML = '';
+
+  if (!posts.length) {
+    grid.innerHTML = `
+      <div class="bf-error">
+        <div class="bf-error-icon">🔍</div>
+        <h3>No posts in this category</h3>
+        <p>Try a different filter or view all posts on the blog.</p>
+      </div>`;
+    return;
+  }
+
+  posts.forEach((post, i) => {
+    const card = document.createElement('a');
+    card.href   = post.link;
+    card.target = '_blank';
+    card.rel    = 'noopener noreferrer';
+    card.className = 'bf-card';
+    card.style.cssText = `--tag-color:${post.catColor}; animation-delay:${i * 0.07}s;`;
+    card.style.animationPlayState = 'paused';
+
+    // Primary tag — pick first meaningful one
+    const primaryTag = post.tags[0] || post.detectedCategory;
+    // Secondary tag
+    const secondaryTag = post.tags[1] || null;
+
+    card.innerHTML = `
+      <div class="bf-card-bar"></div>
+      <div class="bf-thumb">
+        ${post.thumb
+          ? `<img src="${escHtml(post.thumb)}" alt="${escHtml(post.title)}" loading="lazy"
+               onerror="this.parentElement.innerHTML='<div class=\\'bf-thumb-placeholder\\'><div class=\\'bf-thumb-icon\\'>${post.catIcon}</div><div class=\\'bf-thumb-label\\'>${escHtml(post.detectedCategory)}</div></div>'">`
+          : `<div class="bf-thumb-placeholder">
+               <div class="bf-thumb-icon">${post.catIcon}</div>
+               <div class="bf-thumb-label">${escHtml(post.detectedCategory)}</div>
+             </div>`
+        }
+      </div>
+      <div class="bf-card-body">
+        <div class="bf-tags">
+          <span class="bf-tag">${escHtml(primaryTag)}</span>
+          ${secondaryTag ? `<span class="bf-tag" style="--tag-color:var(--accent-2)">${escHtml(secondaryTag)}</span>` : ''}
+        </div>
+        <div class="bf-title">${escHtml(post.title)}</div>
+        <div class="bf-excerpt">${escHtml(post.excerpt)}</div>
+        <div class="bf-card-footer">
+          <div class="bf-meta">
+            <i class="fas fa-calendar"></i>
+            ${post.dateStr}
+            &nbsp;·&nbsp;
+            <i class="fas fa-clock"></i>
+            ${post.readTime} min read
+          </div>
+          <div class="bf-read-more">Read <i class="fas fa-arrow-right"></i></div>
+        </div>
+      </div>`;
+
+    grid.appendChild(card);
+  });
+
+  // Scroll reveal
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animationPlayState = 'running';
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.bf-card').forEach(c => io.observe(c));
+}
+
+function showError(msg) {
+  document.getElementById('bfGrid').innerHTML = `
+    <div class="bf-error">
+      <div class="bf-error-icon">📡</div>
+      <h3>Could not load posts</h3>
+      <p>${escHtml(msg)}<br>
+        <a href="${BLOG_URL}" target="_blank" style="color:var(--skin-color);font-weight:600;">
+          Visit blog directly →
+        </a>
+      </p>
+    </div>`;
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FILTER LOGIC
+// ═══════════════════════════════════════════════════════════
+document.getElementById('bfFilters').addEventListener('click', function(e) {
+  const btn = e.target.closest('.bf-filter');
+  if (!btn) return;
+
+  document.querySelectorAll('.bf-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = btn.dataset.filter;
+
+  let filtered = allPosts;
+  if (activeFilter !== 'all') {
+    const matchTags = FILTER_MAP[activeFilter] || [activeFilter];
+    filtered = allPosts.filter(post =>
+      post.tags.some(tag =>
+        matchTags.some(m => tag.toLowerCase().includes(m.toLowerCase()))
+      )
+    );
+  }
+
+  document.getElementById('bfShowCount').textContent = Math.min(MAX_DISPLAY, filtered.length);
+  renderPosts(filtered.slice(0, MAX_DISPLAY));
+});
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+loadFeed();
