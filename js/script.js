@@ -133,8 +133,8 @@ N:Suleman;Muhammad Uzair;;;
 FN:Muhammad Uzair
 ORG:Systems Limited
 TITLE:Principal Consultant – Power Platform Solution Architect
-TEL;TYPE=WORK,voice;VALUE=uri:tel:+923428388817
-EMAIL:uzair.suleman@systemsltd.com
+TEL;TYPE=WORK,voice;VALUE=uri:tel:+923112983500
+EMAIL:uzairsuleman786@gmail.com
 URL:https://www.linkedin.com/in/muhammaduzairsuleman/
 ADR;TYPE=WORK:;;Lahore;Punjab;;Pakistan
 REV:20260101T000000Z
