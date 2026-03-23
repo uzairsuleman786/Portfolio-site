@@ -962,6 +962,139 @@
 </div>
 <!-- ═══ STYLE SWITCHER END ═══ -->
 
+<!-- ════════════════════════════════════════
+     AVAILABILITY WIDGET HTML
+     Paste this block just before </body> in index.html
+════════════════════════════════════════ -->
+
+<!-- Floating trigger -->
+<div class="avail-trigger" id="availTrigger">
+  <div class="avail-dismiss" id="availDismiss" title="Hide widget">
+    <i class="fas fa-times"></i>
+  </div>
+  <div class="avail-pill" id="availPill">
+    <div class="avail-dot-wrap">
+      <div class="avail-dot-ring"></div>
+      <div class="avail-dot"></div>
+    </div>
+    <div class="avail-pill-text">
+      <div class="avail-pill-status">Available for Projects</div>
+      <div class="avail-pill-sub">Let's build something great</div>
+    </div>
+    <i class="fas fa-chevron-up avail-pill-chevron" id="availChevron"></i>
+  </div>
+</div>
+
+<!-- Expanded card -->
+<div class="avail-card" id="availCard">
+  <div class="avail-card-bar"></div>
+  <div class="avail-card-inner">
+
+    <!-- Header -->
+    <div class="avail-card-head">
+      <div class="avail-card-head-left">
+        <div class="avail-status-badge">
+          <span class="dot"></span> Available Now
+        </div>
+        <div class="avail-card-name">Muhammad Uzair</div>
+        <div class="avail-card-role">Principal Consultant · Power Platform</div>
+      </div>
+      <div class="avail-avatar">
+        <img src="images/hero.jpeg" alt="Muhammad Uzair"
+             onerror="this.style.display='none';this.parentElement.innerHTML='MU'"/>
+      </div>
+    </div>
+
+    <div class="avail-divider"></div>
+
+    <!-- Details -->
+    <div class="avail-details">
+      <div class="avail-detail-row">
+        <div class="avail-detail-icon">📍</div>
+        <div class="avail-detail-text"><strong>Lahore, Pakistan</strong> · Remote worldwide</div>
+      </div>
+      <div class="avail-detail-row">
+        <div class="avail-detail-icon">⏱️</div>
+        <div class="avail-detail-text">Responds within <strong>24 hours</strong></div>
+      </div>
+      <div class="avail-detail-row">
+        <div class="avail-detail-icon">💼</div>
+        <div class="avail-detail-text">Open to <strong>consulting</strong> &amp; <strong>fixed-scope</strong> projects</div>
+      </div>
+      <div class="avail-detail-row">
+        <div class="avail-detail-icon">🗓️</div>
+        <div class="avail-detail-text">Available <strong>immediately</strong> · March 2026</div>
+      </div>
+    </div>
+
+    <!-- Speciality chips -->
+    <div class="avail-chips">
+      <span class="avail-chip">Power Apps</span>
+      <span class="avail-chip">Power Automate</span>
+      <span class="avail-chip">Power Pages</span>
+      <span class="avail-chip">Copilot Studio</span>
+      <span class="avail-chip">Azure AI</span>
+    </div>
+
+    <!-- Inline booking form / success state -->
+    <div class="avail-success" id="availSuccess">
+      <div class="avail-success-icon">✅</div>
+      <h4>Message Sent!</h4>
+      <p>Muhammad Uzair will get back to<br>you within 24 hours.</p>
+    </div>
+
+    <div class="avail-form" id="availForm">
+      <div class="avail-form-title">Send a quick message</div>
+      <input  type="text"  class="avail-input" id="availName"    placeholder="Your name"/>
+      <input  type="email" class="avail-input" id="availEmail"   placeholder="Your email"/>
+      <textarea            class="avail-input textarea" id="availMsg" placeholder="Tell me about your project…"></textarea>
+      <button class="avail-btn primary" id="availFormSubmit">
+        <i class="fas fa-paper-plane"></i> Send Message
+      </button>
+      <button class="avail-btn ghost"   id="availFormCancel">
+        <i class="fas fa-arrow-left"></i> Back
+      </button>
+    </div>
+
+    <!-- Main actions -->
+    <div class="avail-actions" id="availActions">
+      <!-- ★ PRIMARY: Book a call via Calendly
+           Replace YOUR_CALENDLY_LINK below with your actual Calendly URL
+           e.g. https://calendly.com/muhammaduzair/30min
+           If you don't have Calendly, the "Send a Quick Message" button below is the fallback -->
+      <a href="https://calendly.com/YOUR_CALENDLY_LINK"
+         target="_blank"
+         class="avail-btn primary"
+         id="availCalendlyBtn">
+        <i class="fas fa-calendar-check"></i> Book a Free Consultation
+      </a>
+      <a href="mailto:uzair.suleman@systemsltd.com"
+         class="avail-btn secondary">
+        <i class="fas fa-envelope"></i> Send an Email
+      </a>
+      <button class="avail-btn ghost" id="availMessageBtn">
+        <i class="fas fa-comment-dots"></i> Send a Quick Message
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Calendly inline popup (used when Calendly URL is set) -->
+<div class="avail-calendly-overlay" id="availCalendlyOverlay">
+  <div class="avail-calendly-box">
+    <div class="avail-calendly-head">
+      <span>📅 Book a Free Consultation</span>
+      <div class="avail-calendly-close" id="availCalendlyClose">
+        <i class="fas fa-times"></i>
+      </div>
+    </div>
+    <iframe class="avail-calendly-frame" id="availCalendlyFrame"
+            src="" title="Book a consultation with Muhammad Uzair"
+            loading="lazy"></iframe>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js" referrerpolicy="no-referrer"></script>
 <script src="js/script.js"></script>
 <script src="js/style-switcher.js"></script>

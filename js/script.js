@@ -1154,3 +1154,197 @@ function escHtml(str) {
 // ── Init ─────────────────────────────────────────────
 buildProgressStrip();
 buildGrid();
+
+
+//════════════════════════════════════════
+//     WIDGET SCRIPT
+//     Paste this block at bottom of js/script.js
+//════════════════════════════════════════ -->
+(function() {
+
+  // ── CONFIG ─────────────────────────────────────────────
+  // Replace with your actual Calendly URL once you set it up
+  // e.g. 'https://calendly.com/muhammaduzair/30min'
+  // Leave as empty string '' to use the quick message form instead
+  const CALENDLY_URL = 'https://calendly.com/uzairsuleman786/30min';
+
+  // EmailJS config — reuse existing setup from contact form
+  // Service ID and template ID already initialised in index.html
+  const EMAILJS_SERVICE  = 'service_2fbeyzc';
+  const EMAILJS_TEMPLATE = 'template_bkwnjdj';
+
+  // ── ELEMENTS ───────────────────────────────────────────
+  const pill              = document.getElementById('availPill');
+  const card              = document.getElementById('availCard');
+  const chevron           = document.getElementById('availChevron');
+  const dismiss           = document.getElementById('availDismiss');
+  const calendlyBtn       = document.getElementById('availCalendlyBtn');
+  const calendlyOverlay   = document.getElementById('availCalendlyOverlay');
+  const calendlyFrame     = document.getElementById('availCalendlyFrame');
+  const calendlyClose     = document.getElementById('availCalendlyClose');
+  const messageBtn        = document.getElementById('availMessageBtn');
+  const formEl            = document.getElementById('availForm');
+  const formSubmit        = document.getElementById('availFormSubmit');
+  const formCancel        = document.getElementById('availFormCancel');
+  const successEl         = document.getElementById('availSuccess');
+  const actions           = document.getElementById('availActions');
+  const trigger           = document.getElementById('availTrigger');
+
+  let isOpen      = false;
+  let isDismissed = false;
+
+  // ── Wire Calendly button ───────────────────────────────
+  // If CALENDLY_URL is set → open inline popup
+  // Otherwise → fall through to the form
+  if (CALENDLY_URL) {
+    calendlyBtn.href = '#';
+    calendlyBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      calendlyFrame.src = CALENDLY_URL + '?embed_type=PopupWidget&hide_gdpr_banner=1&background_color=080d1a&text_color=eef0f8&primary_color=5b8dee';
+      calendlyOverlay.classList.add('open');
+    });
+  }
+  // If no Calendly URL — button naturally opens Calendly.com signup
+  // or you can set a direct URL later
+
+  // ── Toggle card ────────────────────────────────────────
+  function openCard()  {
+    isOpen = true;
+    card.classList.add('open');
+    pill.classList.add('open');
+    chevron.style.transform = 'rotate(180deg)';
+  }
+  function closeCard() {
+    isOpen = false;
+    card.classList.remove('open');
+    pill.classList.remove('open');
+    chevron.style.transform = '';
+  }
+
+  pill.addEventListener('click', () => isOpen ? closeCard() : openCard());
+
+  // ── Dismiss (hide widget entirely for session) ─────────
+  dismiss.addEventListener('click', function(e) {
+    e.stopPropagation();
+    isDismissed = true;
+    trigger.style.transition = 'opacity 0.3s, transform 0.3s';
+    trigger.style.opacity = '0';
+    trigger.style.transform = 'translateY(20px)';
+    card.classList.remove('open');
+    setTimeout(() => { trigger.style.display = 'none'; }, 350);
+    sessionStorage.setItem('availDismissed', '1');
+  });
+
+  // Restore from session storage
+  if (sessionStorage.getItem('availDismissed') === '1') {
+    trigger.style.display = 'none';
+  }
+
+  // ── Close card when clicking outside ──────────────────
+  document.addEventListener('click', function(e) {
+    if (isOpen && !card.contains(e.target) && !pill.contains(e.target)) {
+      closeCard();
+    }
+  });
+
+  // ── Calendly overlay close ─────────────────────────────
+  calendlyClose.addEventListener('click', () => {
+    calendlyOverlay.classList.remove('open');
+    setTimeout(() => { calendlyFrame.src = ''; }, 400);
+  });
+  calendlyOverlay.addEventListener('click', function(e) {
+    if (e.target === calendlyOverlay) {
+      calendlyOverlay.classList.remove('open');
+      setTimeout(() => { calendlyFrame.src = ''; }, 400);
+    }
+  });
+
+  // ── Quick message form toggle ─────────────────────────
+  messageBtn.addEventListener('click', () => {
+    actions.style.display = 'none';
+    formEl.classList.add('visible');
+    document.getElementById('availName').focus();
+  });
+  formCancel.addEventListener('click', () => {
+    formEl.classList.remove('visible');
+    actions.style.display = '';
+  });
+
+  // ── Form submit via EmailJS ───────────────────────────
+  formSubmit.addEventListener('click', function() {
+    const name  = document.getElementById('availName').value.trim();
+    const email = document.getElementById('availEmail').value.trim();
+    const msg   = document.getElementById('availMsg').value.trim();
+
+    if (!name)  { shake(document.getElementById('availName'));  return; }
+    if (!email) { shake(document.getElementById('availEmail')); return; }
+    if (!msg)   { shake(document.getElementById('availMsg'));   return; }
+
+    formSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
+    formSubmit.disabled  = true;
+
+    // Use EmailJS if available (initialised in index.html)
+    if (typeof emailjs !== 'undefined') {
+      emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+        from_name:  name,
+        from_email: email,
+        message:    `[Portfolio Widget]\n${msg}`,
+        email:      'uzairsuleman786@gmail.com',
+      }).then(() => showSuccess(), () => showSuccess()); // show success either way
+    } else {
+      // Fallback — open mailto
+      window.location.href = `mailto:uzairsuleman786@gmail.com?subject=Project Enquiry from ${encodeURIComponent(name)}&body=${encodeURIComponent(msg)}`;
+      showSuccess();
+    }
+  });
+
+  function showSuccess() {
+    formEl.classList.remove('visible');
+    successEl.classList.add('visible');
+    formSubmit.disabled = false;
+    formSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+    // Auto reset after 5s
+    setTimeout(() => {
+      successEl.classList.remove('visible');
+      actions.style.display = '';
+      document.getElementById('availName').value  = '';
+      document.getElementById('availEmail').value = '';
+      document.getElementById('availMsg').value   = '';
+    }, 5000);
+  }
+
+  function shake(el) {
+    el.style.animation = 'none';
+    el.style.borderColor = '#f87171';
+    el.offsetHeight; // reflow
+    el.style.animation = 'availShake 0.4s ease';
+    setTimeout(() => {
+      el.style.borderColor = '';
+      el.style.animation   = '';
+    }, 500);
+    el.focus();
+  }
+
+  // Inject shake keyframe once
+  if (!document.getElementById('availShakeKF')) {
+    const s = document.createElement('style');
+    s.id = 'availShakeKF';
+    s.textContent = `@keyframes availShake {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-6px)}
+      40%{transform:translateX(6px)}
+      60%{transform:translateX(-4px)}
+      80%{transform:translateX(4px)}
+    }`;
+    document.head.appendChild(s);
+  }
+
+  // ── Auto-open after 8s (first visit only) ─────────────
+  if (!sessionStorage.getItem('availSeen') && !sessionStorage.getItem('availDismissed')) {
+    setTimeout(() => {
+      if (!isOpen) openCard();
+      sessionStorage.setItem('availSeen', '1');
+    }, 8000);
+  }
+
+})();
