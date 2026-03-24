@@ -87,7 +87,7 @@ if (contactForm) {
         submitBtn.value = "Sending...";
         submitBtn.disabled = true;
 
-        emailjs.sendForm("service_2fbeyzc", "template_bkwnjdj", this)
+        emailjs.sendForm("service_lgfh56g", "template_bkwnjdj", this)
             .then(() => {
                 submitBtn.value = "Send Message";
                 submitBtn.disabled = false;
@@ -1170,7 +1170,7 @@ buildGrid();
 
   // EmailJS config — reuse existing setup from contact form
   // Service ID and template ID already initialised in index.html
-  const EMAILJS_SERVICE  = 'service_2fbeyzc';
+  const EMAILJS_SERVICE  = 'service_lgfh56g';
   const EMAILJS_TEMPLATE = 'template_bkwnjdj';
 
   // ── ELEMENTS ───────────────────────────────────────────
@@ -1283,17 +1283,44 @@ buildGrid();
     formSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
     formSubmit.disabled  = true;
 
-    // Use EmailJS if available (initialised in index.html)
     if (typeof emailjs !== 'undefined') {
-      emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
-        from_name:  name,
-        from_email: email,
-        message:    `[Portfolio Widget]\n${msg}`,
-        email:      'uzairsuleman786@gmail.com',
-      }).then(() => showSuccess(), () => showSuccess()); // show success either way
+      // Build a hidden form — parameter names match your EmailJS template exactly
+      // (same template used by the main contact form: name, title, message, email)
+      const tempForm = document.createElement('form');
+      tempForm.style.display = 'none';
+
+      const fields = {
+        name:    name,
+        title:   'From: ' + email + '   Message: ' + msg,
+        message: 'Project Enquiry via Portfolio Widget',
+        email:   'uzairsuleman786@gmail.com'
+      };
+      Object.entries(fields).forEach(([key, val]) => {
+        const input = document.createElement('input');
+        input.name  = key;
+        input.value = val;
+        tempForm.appendChild(input);
+      });
+      document.body.appendChild(tempForm);
+
+      emailjs.sendForm(EMAILJS_SERVICE, EMAILJS_TEMPLATE, tempForm)
+        .then(() => {
+          document.body.removeChild(tempForm);
+          showSuccess();
+        }, (error) => {
+          document.body.removeChild(tempForm);
+          console.error('EmailJS widget error:', error);
+          // Graceful fallback to mailto
+          window.location.href = 'mailto:uzairsuleman786@gmail.com'
+            + '?subject=' + encodeURIComponent('Project Enquiry from ' + name)
+            + '&body='    + encodeURIComponent('[From: ' + email + ']\n\n' + msg);
+          showSuccess();
+        });
     } else {
-      // Fallback — open mailto
-      window.location.href = `mailto:uzairsuleman786@gmail.com?subject=Project Enquiry from ${encodeURIComponent(name)}&body=${encodeURIComponent(msg)}`;
+      // EmailJS SDK not loaded — open mailto directly
+      window.location.href = 'mailto:uzairsuleman786@gmail.com'
+        + '?subject=' + encodeURIComponent('Project Enquiry from ' + name)
+        + '&body='    + encodeURIComponent('[From: ' + email + ']\n\n' + msg);
       showSuccess();
     }
   });
@@ -1345,6 +1372,278 @@ buildGrid();
       if (!isOpen) openCard();
       sessionStorage.setItem('availSeen', '1');
     }, 8000);
+  }
+
+})();
+
+
+/* ═══════════════════════════════════════════════════
+   GROQ CHAT WIDGET — all vars prefixed gc
+   Zero conflict with avail- availability widget
+═══════════════════════════════════════════════════ */
+(function() {
+
+  var GC_KEY   = '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';
+  var GC_MODEL = 'llama3-70b-8192';
+
+  var GC_SYS = [
+    "You are an AI assistant embedded in Muhammad Uzair's professional portfolio website.",
+    "Help recruiters, hiring managers, and clients learn about his experience, skills, certifications, and projects.",
+    "Be conversational, confident, and specific. Keep answers concise (2-4 sentences) unless more detail is needed.",
+    "Never fabricate — only share what is in the knowledge base below.",
+    "If asked something not covered say: I don't have that detail, but you can reach Uzair at uzairsuleman786@gmail.com or via LinkedIn.",
+    "",
+    "=== KNOWLEDGE BASE ===",
+    "Name: Muhammad Uzair",
+    "Title: Principal Consultant & Power Platform Solution Architect",
+    "Company: Systems Limited, Lahore, Pakistan (Jan 2023-Present). Also consults via Visionet Systems.",
+    "Promoted to Principal Consultant Jan 2026. Location: Lahore, Pakistan. Remote worldwide.",
+    "Email: uzairsuleman786@gmail.com | LinkedIn: linkedin.com/in/muhammaduzairsuleman",
+    "GitHub: github.com/uzairsuleman786 | Blog: muzairsuleman.blogspot.com | YouTube: @learnwith-uzair",
+    "",
+    "CERTIFICATIONS (6 active): PL-600 Expert (highest), PL-400 Associate, PL-200 Associate, AI-102 Associate, MB-910 Fundamentals, PL-900 Fundamentals",
+    "",
+    "SKILLS: Power Apps (Canvas/MDA/PCF), Power Automate (Cloud/Desktop/HTTP/Logic Apps/Hybrid Runbook Workers), Power BI (DAX/Power Query/RLS), Power Pages (Liquid/Web roles/Web API), Copilot Studio (Azure OpenAI grounding/Teams), Dataverse (tables/security/plugins/ALM), Azure AI (AI Foundry/OpenAI/AI Builder/Azure Functions/Entra ID), Integrations (SuccessFactors/ServiceNow/DocuSign/SAP-GRC/CCure/Twilio/banking APIs), ALM (GitHub Actions/Octopus Deploy)",
+    "",
+    "EXPERIENCE:",
+    "1. Principal Consultant – Systems Limited (Jan 2023-Present): HECO IAM Automation (JML lifecycle for Hawaiian Electric): Power Pages portal, Power Automate orchestration, Dataverse, Power BI, Azure Hybrid Runbook Worker for on-prem AD, integrations to SuccessFactors+ServiceNow+DocuSign+SAP/GRC+CCure/Victor.",
+    "2. Power Platform Developer – Imperium Dynamics (Mar 2022-Jan 2023): Imperium Hourly, PowerTextor (SMS/Twilio), Ghanem Forwarding LLC logistics.",
+    "3. Software Engineer – Dubai Islamic Bank Pakistan (Mar 2021-Mar 2022): Raast, Roshan Digital Account, Remittance Processing, Sandbox API Hub.",
+    "4. Web Developer Intern – The Next Rex (Dec 2020-Mar 2021): WordPress sites.",
+    "",
+    "ENTERPRISE CLIENTS:",
+    "HECO (Hawaiian Electric) – Energy/Utilities USA: Full JML IAM automation.",
+    "Beazley Insurance – Insurance UK: Power Pages broker portal, Teams approval flows, Power BI, Copilot Studio bot.",
+    "Arrowhead Pharmaceuticals – Pharma USA: Model-Driven App, AI Builder document processing.",
+    "Dubai Islamic Bank – Banking: Raast, Roshan Digital Account, Remittance, Sandbox API Hub.",
+    "Emirates – Canvas App digital business card with QR. Imperium Hourly – time tracking. PowerTextor – SMS. Ghanem Forwarding – logistics UAE.",
+    "",
+    "EDUCATION: BS Computer Science Bahria University Karachi 2016-2021 CGPA 3.10. FYP: Sentiment Analysis Using Emoji (Python NLP+ML).",
+    "",
+    "CONTENT: YouTube @learnwith-uzair: Power Pages Full Course 2026 (6-part free series). Blog: muzairsuleman.blogspot.com weekly tutorials. Active LinkedIn creator.",
+    "",
+    "AVAILABILITY: Available now for consulting and fixed-scope projects. Remote worldwide. Responds within 24h.",
+    "Email: uzairsuleman786@gmail.com | Calendly: calendly.com/uzairsuleman786/30min"
+  ].join('\n');
+
+  var gcOpen    = false;
+  var gcBusy    = false;
+  var gcHistory = [];
+  var gcGreeted = false;
+  var gcRotIdx  = 0;
+
+  var gcTrigEl  = document.getElementById('gcTrigger');
+  var gcPillEl  = document.getElementById('gcPill');
+  var gcWinEl   = document.getElementById('gcWindow');
+  var gcMsgsEl  = document.getElementById('gcMsgs');
+  var gcInputEl = document.getElementById('gcInput');
+  var gcSendEl  = document.getElementById('gcSendBtn');
+  var gcCloseEl = document.getElementById('gcCloseBtn');
+  var gcClearEl = document.getElementById('gcClearBtn');
+  var gcDismEl  = document.getElementById('gcDismiss');
+  var gcChipsEl = document.getElementById('gcChips');
+  var gcUnrdEl  = document.getElementById('gcUnread');
+
+  if (!gcTrigEl || !gcPillEl || !gcWinEl) return; // guard if elements missing
+
+  function gcDoOpen() {
+    gcOpen = true;
+    gcWinEl.classList.add('gc-open');
+    gcPillEl.classList.add('gc-open');
+    gcUnrdEl.classList.remove('gc-show');
+    if (!gcGreeted) gcDoGreet();
+    setTimeout(function() { gcInputEl.focus(); }, 350);
+  }
+  function gcDoClose() {
+    gcOpen = false;
+    gcWinEl.classList.remove('gc-open');
+    gcPillEl.classList.remove('gc-open');
+  }
+
+  gcPillEl.addEventListener('click', function() { gcOpen ? gcDoClose() : gcDoOpen(); });
+  gcCloseEl.addEventListener('click', gcDoClose);
+
+  document.addEventListener('click', function(e) {
+    if (gcOpen && !gcWinEl.contains(e.target) && !gcPillEl.contains(e.target)) gcDoClose();
+  });
+
+  gcDismEl.addEventListener('click', function(e) {
+    e.stopPropagation();
+    gcTrigEl.style.transition = 'opacity 0.3s, transform 0.3s';
+    gcTrigEl.style.opacity = '0';
+    gcTrigEl.style.transform = 'translateY(20px)';
+    gcDoClose();
+    setTimeout(function() { gcTrigEl.style.display = 'none'; }, 350);
+    sessionStorage.setItem('gcBotDismissed', '1');
+  });
+  if (sessionStorage.getItem('gcBotDismissed') === '1') gcTrigEl.style.display = 'none';
+
+  gcClearEl.addEventListener('click', function() {
+    gcHistory = []; gcGreeted = false;
+    gcMsgsEl.innerHTML = '';
+    gcDoGreet();
+  });
+
+  function gcDoGreet() {
+    gcGreeted = true;
+    gcAddBubble('bot',
+      "\uD83D\uDC4B Hi! I'm Uzair's AI assistant, powered by Groq + Llama 3.\n\n" +
+      "I know everything about his experience, projects, certifications, and skills.\n\n" +
+      'Ask me anything — like **"What did Uzair build for HECO?"** or **"What certifications does he have?"**'
+    );
+    setTimeout(function() { gcChipsEl.style.display = 'flex'; }, 400);
+  }
+
+  gcChipsEl.addEventListener('click', function(e) {
+    var chip = e.target.closest('.gc-chip');
+    if (!chip) return;
+    gcChipsEl.style.display = 'none';
+    gcDoSend(chip.textContent.trim());
+  });
+
+  function gcDoSend(text) {
+    if (!text.trim() || gcBusy) return;
+    var txt = text.trim();
+    gcInputEl.value = '';
+    gcResize();
+    gcAddBubble('user', txt);
+    gcHistory.push({ role: 'user', content: txt });
+    gcChipsEl.style.display = 'none';
+    gcSendEl.disabled = true;
+    gcBusy = true;
+
+    var typId = gcShowTyping();
+
+    // Build OpenAI-compatible messages array for Groq
+    var gcMessages = [{ role: 'system', content: GC_SYS }];
+    gcHistory.forEach(function(m) {
+      gcMessages.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content });
+    });
+
+    fetch(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + GC_KEY
+        },
+        body: JSON.stringify({
+          model: GC_MODEL,
+          messages: gcMessages,
+          max_tokens: 600,
+          temperature: 0.7
+        })
+      }
+    )
+    .then(function(res) {
+      gcHideTyping(typId);
+      if (!res.ok) return res.json().then(function(d) {
+        throw new Error((d.error && d.error.message) ? d.error.message : 'API error ' + res.status);
+      });
+      return res.json();
+    })
+    .then(function(data) {
+      var reply = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content)
+                  ? data.choices[0].message.content
+                  : "Sorry, I couldn't generate a response.";
+      gcHistory.push({ role: 'assistant', content: reply });
+      gcAddBubble('bot', reply);
+      if (gcHistory.length >= 4 && gcHistory.length % 4 === 0) {
+        setTimeout(function() { gcRotateChips(); gcChipsEl.style.display = 'flex'; }, 500);
+      }
+    })
+    .catch(function(err) {
+      gcHideTyping(typId);
+      var msg = err.message || '';
+      var friendly = "Sorry, I'm having trouble connecting. Please try again.";
+      if (msg.indexOf('401') > -1 || msg.indexOf('400') > -1) {
+        friendly = "Configuration issue. Please reach Uzair at **uzairsuleman786@gmail.com** or via [LinkedIn](https://linkedin.com/in/muhammaduzairsuleman).";
+      } else if (msg.indexOf('429') > -1 || msg.indexOf('rate_limit') > -1) {
+        friendly = "I'm receiving too many questions at once. Please wait a moment and try again!";
+      }
+      gcAddBubble('bot', friendly);
+    })
+    .finally(function() {
+      gcBusy = false;
+      gcSendEl.disabled = false;
+      gcInputEl.focus();
+    });
+  }
+
+  function gcAddBubble(role, text) {
+    var wrap = document.createElement('div');
+    wrap.className = 'gc-msg gc-' + role;
+    var av = document.createElement('div');
+    av.className = 'gc-msg-av';
+    av.textContent = role === 'bot' ? '\uD83E\uDD16' : 'U';
+    var bub = document.createElement('div');
+    bub.className = 'gc-bubble';
+    bub.innerHTML = gcFmt(text);
+    var ts = document.createElement('div');
+    ts.className = 'gc-ts';
+    ts.textContent = gcNow();
+    var col = document.createElement('div');
+    col.className = 'gc-msg-col';
+    col.appendChild(bub);
+    col.appendChild(ts);
+    if (role === 'bot') { wrap.appendChild(av); wrap.appendChild(col); }
+    else { wrap.appendChild(col); wrap.appendChild(av); }
+    gcMsgsEl.appendChild(wrap);
+    gcScroll();
+    if (!gcOpen && role === 'bot') gcUnrdEl.classList.add('gc-show');
+  }
+
+  function gcShowTyping() {
+    var id = 'gcTyp_' + Date.now();
+    var w = document.createElement('div');
+    w.className = 'gc-msg gc-bot'; w.id = id;
+    w.innerHTML = '<div class="gc-msg-av">\uD83E\uDD16</div><div class="gc-msg-col"><div class="gc-bubble"><div class="gc-typing-dots"><span></span><span></span><span></span></div></div></div>';
+    gcMsgsEl.appendChild(w);
+    gcScroll();
+    return id;
+  }
+  function gcHideTyping(id) { var el = document.getElementById(id); if (el) el.remove(); }
+  function gcScroll() { gcMsgsEl.scrollTop = gcMsgsEl.scrollHeight; }
+
+  function gcFmt(t) {
+    return t
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,'<em>$1</em>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" style="color:#7c6af7;font-weight:600;">$1</a>')
+      .replace(/\n/g,'<br>');
+  }
+  function gcNow() {
+    return new Date().toLocaleTimeString('en-US',{ hour:'2-digit', minute:'2-digit', hour12:true });
+  }
+
+  gcInputEl.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); gcDoSend(gcInputEl.value); }
+  });
+  gcInputEl.addEventListener('input', gcResize);
+  gcSendEl.addEventListener('click', function() { gcDoSend(gcInputEl.value); });
+  function gcResize() { gcInputEl.style.height = 'auto'; gcInputEl.style.height = Math.min(gcInputEl.scrollHeight, 100) + 'px'; }
+
+  var GC_ROTCHIPS = [
+    ["What's Uzair's email?","Is he open to freelance?","What sector does he specialise in?"],
+    ["What tools for ALM?","Does he build AI solutions?","How many certifications?"],
+    ["Tell me about HECO","What's his YouTube course?","Can he start immediately?"]
+  ];
+  function gcRotateChips() {
+    gcChipsEl.innerHTML = '';
+    var set = GC_ROTCHIPS[gcRotIdx % GC_ROTCHIPS.length];
+    gcRotIdx++;
+    set.forEach(function(q) {
+      var s = document.createElement('span'); s.className = 'gc-chip'; s.textContent = q;
+      gcChipsEl.appendChild(s);
+    });
+  }
+
+  if (!sessionStorage.getItem('gcBotSeen') && !sessionStorage.getItem('gcBotDismissed')) {
+    setTimeout(function() {
+      if (!gcOpen) { gcUnrdEl.classList.add('gc-show'); sessionStorage.setItem('gcBotSeen','1'); }
+    }, 15000);
   }
 
 })();
