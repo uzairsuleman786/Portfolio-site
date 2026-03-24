@@ -1383,7 +1383,7 @@ buildGrid();
 ═══════════════════════════════════════════════════ */
 (function() {
 
-  var GC_KEY   = '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';
+  var GC_KEY   = 'GROQ _API_KEY';
   var GC_MODEL = 'llama3-70b-8192';
 
   var GC_SYS = [
