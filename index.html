@@ -926,6 +926,7 @@
 
     </div>
     <!-- ═══ MAIN CONTENT END ═══ -->
+
 </div>
 <!-- ═══ MAIN CONTAINER END ═══ -->
 
@@ -1062,13 +1063,13 @@
            Replace YOUR_CALENDLY_LINK below with your actual Calendly URL
            e.g. https://calendly.com/muhammaduzair/30min
            If you don't have Calendly, the "Send a Quick Message" button below is the fallback -->
-      <a href="https://calendly.com/YOUR_CALENDLY_LINK"
+      <a href="https://calendly.com/uzairsuleman786/30min"
          target="_blank"
          class="avail-btn primary"
          id="availCalendlyBtn">
         <i class="fas fa-calendar-check"></i> Book a Free Consultation
       </a>
-      <a href="mailto:uzair.suleman@systemsltd.com"
+      <a href="mailto:uzairsuleman786@gmail.com"
          class="avail-btn secondary">
         <i class="fas fa-envelope"></i> Send an Email
       </a>
@@ -1095,12 +1096,61 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js" referrerpolicy="no-referrer"></script>
-<script src="js/script.js"></script>
-<script src="js/style-switcher.js"></script>
+<!-- ═══ AI CHATBOT WIDGET ═══ -->
+<!-- Floating pill — bottom LEFT corner -->
+<div class="gc-trigger" id="gcTrigger">
+  <div class="gc-dismiss" id="gcDismiss" title="Hide chatbot">
+    <i class="fas fa-times"></i>
+  </div>
+  <div class="gc-pill" id="gcPill">
+    <div class="gc-pill-icon">&#x1F916;</div>
+    <div class="gc-pill-text">
+      <div class="gc-pill-title">Ask My Portfolio</div>
+      <div class="gc-pill-sub">Powered by Groq AI</div>
+    </div>
+    <i class="fas fa-chevron-up gc-pill-chev" id="gcChev"></i>
+    <div class="gc-unread" id="gcUnread"></div>
+  </div>
+</div>
+
+<!-- Chat window -->
+<div class="gc-window" id="gcWindow">
+  <div class="gc-bar"></div>
+  <div class="gc-head">
+    <div class="gc-head-avatar">&#x1F916;</div>
+    <div class="gc-head-info">
+      <div class="gc-head-name">Uzair's AI Assistant</div>
+      <div class="gc-head-status">Online &middot; Ask me anything</div>
+    </div>
+    <div class="gc-head-btns">
+      <div class="gc-head-btn" id="gcClearBtn" title="Clear chat"><i class="fas fa-rotate-left"></i></div>
+      <div class="gc-head-btn" id="gcCloseBtn" title="Close"><i class="fas fa-times"></i></div>
+    </div>
+  </div>
+  <div class="gc-msgs" id="gcMsgs"></div>
+  <div class="gc-chips" id="gcChips">
+    <span class="gc-chip">What projects has Uzair delivered?</span>
+    <span class="gc-chip">Does he have insurance experience?</span>
+    <span class="gc-chip">What certifications does he hold?</span>
+    <span class="gc-chip">Can he work remotely?</span>
+  </div>
+  <div class="gc-input-row">
+    <textarea class="gc-input" id="gcInput" placeholder="Ask about Uzair's experience, projects, skills..." rows="1"></textarea>
+    <button class="gc-send" id="gcSendBtn"><i class="fas fa-paper-plane"></i></button>
+  </div>
+  <div class="gc-footer">
+    Powered by <a href="https://groq.com" target="_blank">Groq AI</a> &middot; Llama 3 &middot; Free
+  </div>
+</div>
+<!-- ═══ AI CHATBOT END ═══ -->
+
+<!-- EmailJS loaded FIRST so widget form can use it -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="text/javascript">
     (function() { emailjs.init('hf05BbyV-HOdP0xMQ'); })();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js" referrerpolicy="no-referrer"></script>
+<script src="js/script.js"></script>
+<script src="js/style-switcher.js"></script>
 </body>
 </html>
