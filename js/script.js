@@ -1381,10 +1381,10 @@ buildGrid();
    GROQ CHAT WIDGET — all vars prefixed gc
    Zero conflict with avail- availability widget
 ═══════════════════════════════════════════════════ */
+
 (function() {
 
-  var GC_KEY   = 'GROQ _API_KEY';
-  var GC_MODEL = 'llama3-70b-8192';
+  var GC_MODEL = 'llama-3.1-8b-instant';
 
   var GC_SYS = [
     "You are an AI assistant embedded in Muhammad Uzair's professional portfolio website.",
@@ -1521,12 +1521,11 @@ buildGrid();
     });
 
     fetch(
-      'https://api.groq.com/openai/v1/chat/completions',
+      'https://green-waterfall-9a89.uzairsuleman786.workers.dev/',
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + GC_KEY
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: GC_MODEL,
